@@ -1,2 +1,5 @@
 *.jpg
 *.png
+data/model/*
+data/*.csv
+data/*.json
