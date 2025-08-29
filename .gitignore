@@ -3,3 +3,4 @@
 data/model/*
 data/*/train
 data/*/test
+*/__pycache__/
