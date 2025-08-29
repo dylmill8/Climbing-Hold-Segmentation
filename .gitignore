@@ -1,3 +1,5 @@
 *.jpg
 *.png
 data/model/*
+data/*/train
+data/*/test
