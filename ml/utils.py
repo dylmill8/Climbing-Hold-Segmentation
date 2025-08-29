@@ -5,6 +5,7 @@ from typing import List
 
 import torch
 from torch.utils.data import random_split
+from tqdm import tqdm
 
 def cp_files(file_list: List[str], destination: str) -> None:
     for f in file_list:
