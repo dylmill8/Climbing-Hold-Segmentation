@@ -1,6 +1,10 @@
-data/*/*.jpg
-*.png
-data/model/*
-data/*/train
-data/*/test
-*/__pycache__/
+# ! DO NOT DELETE
+.env
+
+*.jpg
+data/images/*
+data/labels/*
+data/bh/train/*
+data/bh/test/*
+ml/__pycache__/
+data_roboflow.yaml

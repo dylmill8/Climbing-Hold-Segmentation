@@ -6,6 +6,7 @@ from typing import List
 import torch
 from torch.utils.data import random_split
 from tqdm import tqdm
+import pandas as pd
 
 def cp_files(file_list: List[str], destination: str) -> None:
     for f in file_list:
@@ -72,3 +73,11 @@ def move_train_test(
             k: v for f in test_dataset_files for k, v in f.items()
         }
         json.dump(data, f)
+
+# filters out empty annotations for uploading pre-labeled data to Roboflow
+def filter_annotations(input_csv, output_csv):
+    df = pd.read_csv(input_csv)
+
+    filtered = df[df['region_shape_attributes'].notna() & (df['region_shape_attributes'] != '{}')]
+
+    filtered.to_csv(output_csv, index=False)
