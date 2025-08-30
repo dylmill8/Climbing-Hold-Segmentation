@@ -1,4 +1,4 @@
-*.jpg
+data/*/*.jpg
 *.png
 data/model/*
 data/*/train
