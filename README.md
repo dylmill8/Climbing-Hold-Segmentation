@@ -1,1 +1,1 @@
-# Climbing-Hold-Edge-Detection
+# Climbing-Hold-Segmentation
