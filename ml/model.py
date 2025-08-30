@@ -5,7 +5,7 @@ import shutil
 
 from ultralytics import YOLO
 from utils import (
-    move_train_test,
+    train_test_split
 )
 
 load_dotenv()
@@ -23,7 +23,7 @@ version = project.version(3)
 dataset = version.download(model_format="yolov8-obb")
 
 # Target directory
-target_dir = ".\\data\\"
+target_dir = "./data/"
 images_dir = os.path.join(target_dir, "images")
 labels_dir = os.path.join(target_dir, "labels")
 
@@ -67,6 +67,6 @@ if os.path.exists(yaml_src):
 # Finally, remove the original parent folder
 shutil.rmtree(dataset.location)
 
-move_train_test("./data/bh")
+train_test_split("./data/images", "./data/labels")
 
 model = YOLO("./data/model/yolo11m-seg.pt")

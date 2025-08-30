@@ -2,9 +2,9 @@
 path: ./data/
 
 # paths to images
-train: train/images
-val: valid/images
-test: test/images
+train: images/train
+val: images/valid
+test: images/test
 
 # number of classes
 nc: 1
