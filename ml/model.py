@@ -7,7 +7,6 @@ from utils import (
 
 from ultralytics import YOLO
 
-
 from roboflow import Roboflow
 import shutil
 
