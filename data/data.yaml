@@ -1,0 +1,14 @@
+# path
+path: ./data/
+
+# paths to images
+train: train/images
+val: valid/images
+test: test/images
+
+# number of classes
+nc: 1
+
+# class names
+names: 
+  0: Climbing-Holds
