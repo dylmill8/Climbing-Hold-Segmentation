@@ -1,14 +1,12 @@
 from dotenv import load_dotenv
 import os
+from roboflow import Roboflow
+import shutil
 
+from ultralytics import YOLO
 from utils import (
     move_train_test,
 )
-
-from ultralytics import YOLO
-
-from roboflow import Roboflow
-import shutil
 
 load_dotenv()
 
