@@ -22,7 +22,7 @@ if not ROBOFLOW_API_KEY:
 
 rf = Roboflow(api_key=ROBOFLOW_API_KEY)
 project = rf.workspace(ROBOFLOW_WORKSPACE).project(ROBOFLOW_PROJECT)
-version = project.version(2)
+version = project.version(3)
 dataset = version.download(model_format="yolov8-obb")
 
 # Target directory
