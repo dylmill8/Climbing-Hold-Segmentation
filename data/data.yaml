@@ -10,5 +10,4 @@ test: images/test
 nc: 1
 
 # class names
-names: 
-  0: Climbing-Holds
+names: ['Climbing-Holds']
