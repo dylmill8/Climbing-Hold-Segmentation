@@ -2,6 +2,7 @@
 .env
 
 *.jpg
+*.png
 data/images/*
 data/labels/*
 data/bh/train/*
