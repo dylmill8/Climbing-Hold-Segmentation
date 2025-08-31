@@ -103,5 +103,8 @@ def main():
     # Remove YOLO artifacts
     _ = [os.remove(p) for p in ("yolo11n.pt","yolo11m.pt","yolo11n-seg.pt","yolo11m-seg.pt") if os.path.isfile(p)]
 
+    # TODO: pre-label, rename annotations, & upload on Roboflow
+    # TODO: calculate statistics to measure model performance & visualize results
+
 if __name__ == "__main__":
     main()
