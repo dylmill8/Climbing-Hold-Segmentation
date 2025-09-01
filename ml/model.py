@@ -83,7 +83,7 @@ def main():
         epochs=120,
         patience=30,
         seed=42,
-        device=0,
+        device=None,
         amp=True,
         workers=0,
         optimizer="AdamW",
