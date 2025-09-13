@@ -1,6 +1,9 @@
 import os 
 from ultralytics import YOLO
 
+def main():
+    label_image()
+
 def label_image(image_path="ml/model/test.jpg", model_path="ml/model/runs/y11m_seg_1024/weights/best.pt") -> None:
     """
     Labels an image using the current best model and saves the result.
@@ -22,4 +25,5 @@ def label_image(image_path="ml/model/test.jpg", model_path="ml/model/runs/y11m_s
       result.save(filename=os.path.join(output_dir, "test.jpg"))
       # result.show() # used for testing purposes
 
-label_image()
+if __name__ == "__main__":
+    main()
