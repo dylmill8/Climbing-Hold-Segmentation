@@ -140,3 +140,13 @@ Run inference with hold-only output:
 ```powershell
 python .\ml\inference.py --image path\to\image.jpg --classes 0
 ```
+
+Run a full visual review pass over a dataset split with boxes and masks:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\review_test_predictions.ps1
+```
+
+That reads [`data/training_dataset/data.yaml`](./data/training_dataset/data.yaml) by default,
+runs inference over the `test` split, and saves rendered review images under
+`data/review_predictions/latest_test_review/`.
