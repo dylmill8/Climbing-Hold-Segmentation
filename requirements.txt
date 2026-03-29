@@ -1,0 +1,9 @@
+numpy
+pandas
+Pillow
+python-dotenv
+requests
+roboflow
+torch
+tqdm
+ultralytics
