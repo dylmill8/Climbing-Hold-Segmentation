@@ -19,6 +19,16 @@
       "project_env": "ROBOFLOW_PROJECT",
       "version_env": "ROBOFLOW_VERSION",
       "model_format": "coco-segmentation"
+    },
+    {
+      "name": "climbing_hold_detection_secondary",
+      "type": "roboflow",
+      "download_url_env": "ROBOFLOW_DOWNLOAD_URL_2",
+      "category_name_map": {
+        "0": "hold",
+        "1": "volume"
+      },
+      "model_format": "coco-segmentation"
     }
   ]
 }

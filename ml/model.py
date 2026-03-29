@@ -50,7 +50,7 @@ def _resolve_source_path(raw_path: str) -> Path:
     return (REPO_ROOT / candidate).resolve()
 
 
-def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], tuple[str, ...], dict]:
+def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], list[dict[str, str] | None], tuple[str, ...], dict]:
     class_names = tuple(config.get("class_names", DEFAULT_CLASS_NAMES))
     split_config = config.get("split", {})
     sources = config.get("sources", [])
@@ -59,6 +59,7 @@ def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], tuple[str
 
     resolved_paths: list[str] = []
     resolved_names: list[str] = []
+    resolved_category_maps: list[dict[str, str] | None] = []
     for index, source in enumerate(sources, start=1):
         source_type = source.get("type", "local_coco_export")
         source_name = source.get("name") or f"source_{index}"
@@ -133,8 +134,10 @@ def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], tuple[str
 
         resolved_paths.append(str(source_path))
         resolved_names.append(source_name)
+        raw_category_map = source.get("category_name_map")
+        resolved_category_maps.append(dict(raw_category_map) if isinstance(raw_category_map, dict) else None)
 
-    return resolved_paths, resolved_names, class_names, split_config
+    return resolved_paths, resolved_names, resolved_category_maps, class_names, split_config
 
 
 def prepare_dataset() -> tuple[str, tuple[str, ...]]:
@@ -148,18 +151,20 @@ def prepare_dataset() -> tuple[str, tuple[str, ...]]:
         )
 
     dataset_config = _load_dataset_config(dataset_config_path)
-    source_paths, source_names, class_names, split_config = _resolve_coco_sources(dataset_config)
+    source_paths, source_names, source_category_maps, class_names, split_config = _resolve_coco_sources(dataset_config)
 
     if len(source_paths) == 1 and not split_config.get("force_resplit", True):
         data_yaml = prepare_yolo_dataset_from_coco(
             source_root=source_paths[0],
             output_root=str(prepared_dataset),
             class_names=class_names,
+            category_name_map=source_category_maps[0],
         )
     else:
         data_yaml = prepare_yolo_dataset_from_coco_sources(
             source_roots=source_paths,
             source_names=source_names,
+            source_category_maps=source_category_maps,
             output_root=str(prepared_dataset),
             class_names=class_names,
             train_split=float(split_config.get("train", 0.8)),

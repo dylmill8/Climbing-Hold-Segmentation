@@ -39,7 +39,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\train_segmentation.ps1
 
 Current default training preset in [`scripts/train_segmentation.ps1`](./scripts/train_segmentation.ps1):
 - `yolo26m-seg.pt`
-- `imgsz=1600`
+- `imgsz=1440`
 - `batch=2`
 - `epochs=200`
 - `patience=15`

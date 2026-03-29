@@ -75,15 +75,23 @@ def convert_coco_segmentations_to_yolo(
     output_labels_dir: str,
     category_names: Iterable[str],
     file_name_prefix: str = "",
+    category_name_map: dict[str, str] | None = None,
 ) -> dict[str, int]:
     with open(coco_json_path, "r", encoding="utf-8") as fh:
         coco = json.load(fh)
 
     requested_categories = [_normalize_category_name(name) for name in category_names]
     requested_set = set(requested_categories)
+    normalized_category_map = {
+        _normalize_category_name(key): _normalize_category_name(value)
+        for key, value in (category_name_map or {}).items()
+    }
 
     category_lookup: dict[int, str] = {
-        int(category["id"]): _normalize_category_name(category["name"])
+        int(category["id"]): normalized_category_map.get(
+            _normalize_category_name(category["name"]),
+            _normalize_category_name(category["name"]),
+        )
         for category in coco.get("categories", [])
     }
     category_to_index = {
@@ -177,6 +185,7 @@ def prepare_yolo_dataset_from_coco(
     source_root: str,
     output_root: str,
     class_names: Iterable[str],
+    category_name_map: dict[str, str] | None = None,
 ) -> str:
     normalized_classes = [_normalize_category_name(name) for name in class_names]
     ensure_clean_dir(output_root)
@@ -197,6 +206,7 @@ def prepare_yolo_dataset_from_coco(
             output_images_dir=output_images_dir,
             output_labels_dir=output_labels_dir,
             category_names=normalized_classes,
+            category_name_map=category_name_map,
         )
 
     yaml_path = write_yolo_data_yaml(output_root, normalized_classes)
@@ -218,6 +228,7 @@ def stage_coco_sources_for_resplit(
     output_root: str,
     class_names: Iterable[str],
     source_names: Iterable[str] | None = None,
+    source_category_maps: Iterable[dict[str, str] | None] | None = None,
 ) -> str:
     normalized_classes = [_normalize_category_name(name) for name in class_names]
     ensure_clean_dir(output_root)
@@ -230,9 +241,12 @@ def stage_coco_sources_for_resplit(
     resolved_source_names = list(source_names) if source_names is not None else [
         os.path.basename(os.path.normpath(source_root)) for source_root in source_roots
     ]
+    resolved_category_maps = list(source_category_maps) if source_category_maps is not None else [
+        None for _ in resolved_source_names
+    ]
 
     all_stats: dict[str, dict[str, int]] = {}
-    for source_root, source_name in zip(source_roots, resolved_source_names):
+    for source_root, source_name, category_name_map in zip(source_roots, resolved_source_names, resolved_category_maps):
         prefix = f"{_slugify_source_name(source_name)}__"
         source_stats = {
             "images_total": 0,
@@ -252,6 +266,7 @@ def stage_coco_sources_for_resplit(
                 output_labels_dir=labels_root,
                 category_names=normalized_classes,
                 file_name_prefix=prefix,
+                category_name_map=category_name_map,
             )
 
             for key, value in split_stats.items():
@@ -276,6 +291,7 @@ def prepare_yolo_dataset_from_coco_sources(
     output_root: str,
     class_names: Iterable[str],
     source_names: Iterable[str] | None = None,
+    source_category_maps: Iterable[dict[str, str] | None] | None = None,
     train_split: float = 0.8,
     valid_split: float = 0.5,
     null_fraction: float = 0.0,
@@ -286,6 +302,7 @@ def prepare_yolo_dataset_from_coco_sources(
         output_root=output_root,
         class_names=class_names,
         source_names=source_names,
+        source_category_maps=source_category_maps,
     )
     train_test_split(
         img_dir=os.path.join(output_root, "images"),

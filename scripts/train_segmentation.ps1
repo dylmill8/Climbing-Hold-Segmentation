@@ -14,8 +14,8 @@ $ErrorActionPreference = "Stop"
 # Default run config. Edit these values in one place for your next training run.
 $run = @{
     Weights = "yolo26m-seg.pt"
-    RunName = "y26m_seg_2class_resplit_1600"
-    ImageSize = 1600
+    RunName = "y26m_seg_resplit_1440"
+    ImageSize = 1440
     Batch = 2
     Epochs = 200
     Patience = 15
