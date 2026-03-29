@@ -1,0 +1,36 @@
+{
+    "training":  {
+                     "epochs":  "200",
+                     "data_name":  "data.yaml",
+                     "batch":  "2",
+                     "model_name":  "yolo26m-seg.pt",
+                     "patience":  "10",
+                     "imgsz":  "1280",
+                     "optimizer":  "AdamW",
+                     "seed":  "42"
+                 },
+    "published_at":  "2026-03-29T01:04:41",
+    "files":  [
+                  "best.pt",
+                  "last.pt",
+                  "metrics.json"
+              ],
+    "release_name":  "latest",
+    "metrics":  {
+                    "map50_95_box":  "0.74355",
+                    "time":  "59902.1",
+                    "map50_box":  "0.89252",
+                    "map50_95_mask":  "0.68289",
+                    "val_seg_loss":  "0.99893",
+                    "recall_mask":  "0.80187",
+                    "epoch":  "119",
+                    "val_cls_loss":  "0.38512",
+                    "map50_mask":  "0.88134",
+                    "precision_box":  "0.88748",
+                    "precision_mask":  "0.88069",
+                    "recall_box":  "0.8084",
+                    "val_dfl_loss":  "0.00357",
+                    "val_box_loss":  "0.71803"
+                },
+    "source_run":  "y26m_seg_2class_overnight_12803"
+}

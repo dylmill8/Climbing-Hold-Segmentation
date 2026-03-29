@@ -1,0 +1,16 @@
+{
+    "map50_95_box":  "0.74355",
+    "time":  "59902.1",
+    "map50_box":  "0.89252",
+    "map50_95_mask":  "0.68289",
+    "val_seg_loss":  "0.99893",
+    "recall_mask":  "0.80187",
+    "epoch":  "119",
+    "val_cls_loss":  "0.38512",
+    "map50_mask":  "0.88134",
+    "precision_box":  "0.88748",
+    "precision_mask":  "0.88069",
+    "recall_box":  "0.8084",
+    "val_dfl_loss":  "0.00357",
+    "val_box_loss":  "0.71803"
+}
