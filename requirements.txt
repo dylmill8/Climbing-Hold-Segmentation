@@ -1,6 +1,7 @@
+Pillow
+PyYAML
 numpy
 pandas
-Pillow
 python-dotenv
 requests
 roboflow
