@@ -5,7 +5,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from utils import (
-    download_roboflow_coco_dataset,
     download_roboflow_coco_dataset_from_url,
     load_yolo,
     prepare_yolo_dataset_from_coco,
@@ -78,7 +77,7 @@ def _resolve_source_path(raw_path: str) -> Path:
     return (REPO_ROOT / candidate).resolve()
 
 
-def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], list[dict[str, str] | None], tuple[str, ...], dict]:
+def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], tuple[str, ...], dict]:
     class_names = tuple(config.get("class_names", DEFAULT_CLASS_NAMES))
     split_config = config.get("split", {})
     sources = config.get("sources", [])
@@ -87,17 +86,11 @@ def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], list[dict
 
     resolved_paths: list[str] = []
     resolved_names: list[str] = []
-    resolved_category_maps: list[dict[str, str] | None] = []
     for index, source in enumerate(sources, start=1):
-        source_type = source.get("type", "local_coco_export")
+        source_type = source.get("type", "roboflow_share_url")
         source_name = source.get("name") or f"source_{index}"
 
-        if source_type == "local_coco_export":
-            raw_path = source.get("path")
-            if not raw_path:
-                raise ValueError(f"Dataset source '{source_name}' is missing 'path'.")
-            source_path = _resolve_source_path(raw_path)
-        elif source_type == "roboflow":
+        if source_type == "roboflow_share_url":
             download_root = _resolve_source_path(
                 source.get("download_root", str(DEFAULT_ROBOFLOW_DOWNLOAD_ROOT.relative_to(REPO_ROOT)))
             )
@@ -106,54 +99,20 @@ def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], list[dict
                 download_url_env = source.get("download_url_env", "ROBOFLOW_DOWNLOAD_URL")
                 download_url = os.getenv(download_url_env)
 
-            if download_url:
-                source_path = Path(
-                    download_roboflow_coco_dataset_from_url(
-                        download_url=download_url,
-                        download_root=str(download_root),
-                        dataset_name=source_name,
-                        overwrite=bool(source.get("overwrite", False)),
-                    )
+            if not download_url:
+                raise RuntimeError(
+                    f"Dataset source '{source_name}' requires a Roboflow share URL via "
+                    f"'download_url' or environment variable '{source.get('download_url_env', 'ROBOFLOW_DOWNLOAD_URL')}'."
                 )
-            else:
-                api_key_env = source.get("api_key_env", "ROBOFLOW_API_KEY")
-                api_key = os.getenv(api_key_env)
-                if not api_key:
-                    raise RuntimeError(
-                        f"Dataset source '{source_name}' requires environment variable '{api_key_env}'."
-                    )
 
-                workspace = source.get("workspace")
-                if workspace is None:
-                    workspace_env = source.get("workspace_env", "ROBOFLOW_WORKSPACE")
-                    workspace = os.getenv(workspace_env)
-
-                project = source.get("project")
-                if project is None:
-                    project_env = source.get("project_env", "ROBOFLOW_PROJECT")
-                    project = os.getenv(project_env)
-
-                version = source.get("version")
-                if version is None:
-                    version_env = source.get("version_env", "ROBOFLOW_VERSION")
-                    version = os.getenv(version_env)
-                if not workspace or not project or version is None:
-                    raise ValueError(
-                        f"Dataset source '{source_name}' must include workspace, project, and version."
-                    )
-
-                source_path = Path(
-                    download_roboflow_coco_dataset(
-                        api_key=api_key,
-                        workspace=workspace,
-                        project=project,
-                        version=int(version),
-                        download_root=str(download_root),
-                        dataset_name=source_name,
-                        model_format=source.get("model_format", "coco-segmentation"),
-                        overwrite=bool(source.get("overwrite", False)),
-                    )
+            source_path = Path(
+                download_roboflow_coco_dataset_from_url(
+                    download_url=download_url,
+                    download_root=str(download_root),
+                    dataset_name=source_name,
+                    overwrite=bool(source.get("overwrite", False)),
                 )
+            )
         else:
             raise ValueError(f"Unsupported dataset source type: {source_type}")
 
@@ -162,10 +121,8 @@ def _resolve_coco_sources(config: dict) -> tuple[list[str], list[str], list[dict
 
         resolved_paths.append(str(source_path))
         resolved_names.append(source_name)
-        raw_category_map = source.get("category_name_map")
-        resolved_category_maps.append(dict(raw_category_map) if isinstance(raw_category_map, dict) else None)
 
-    return resolved_paths, resolved_names, resolved_category_maps, class_names, split_config
+    return resolved_paths, resolved_names, class_names, split_config
 
 
 def prepare_dataset() -> tuple[str, tuple[str, ...]]:
@@ -179,20 +136,18 @@ def prepare_dataset() -> tuple[str, tuple[str, ...]]:
         )
 
     dataset_config = _load_dataset_config(dataset_config_path)
-    source_paths, source_names, source_category_maps, class_names, split_config = _resolve_coco_sources(dataset_config)
+    source_paths, source_names, class_names, split_config = _resolve_coco_sources(dataset_config)
 
     if len(source_paths) == 1 and not split_config.get("force_resplit", True):
         data_yaml = prepare_yolo_dataset_from_coco(
             source_root=source_paths[0],
             output_root=str(prepared_dataset),
             class_names=class_names,
-            category_name_map=source_category_maps[0],
         )
     else:
         data_yaml = prepare_yolo_dataset_from_coco_sources(
             source_roots=source_paths,
             source_names=source_names,
-            source_category_maps=source_category_maps,
             output_root=str(prepared_dataset),
             class_names=class_names,
             train_split=float(split_config.get("train", 0.8)),

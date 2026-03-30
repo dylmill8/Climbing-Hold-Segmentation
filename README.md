@@ -77,46 +77,28 @@ python .\ml\model.py
 ## Dataset config
 
 The default config in
-[`data/dataset_sources.json`](./data/dataset_sources.json) uses a Roboflow
-dataset source. It can download either from:
-- a direct Roboflow share URL in `.env`
-- or the standard workspace / project / version values in `.env`
+[`data/dataset_sources.json`](./data/dataset_sources.json) uses Roboflow share
+URLs only. Each source must provide either:
+- `download_url`
+- or `download_url_env` that resolves to a Roboflow share URL in `.env`
 
-Download mode behavior:
-- `ROBOFLOW_DOWNLOAD_URL` is tried first when present. This usually downloads a flat COCO export with images plus a root `_annotations.coco.json`.
-- If `ROBOFLOW_DOWNLOAD_URL` is not set, the pipeline falls back to the Roboflow SDK path using `ROBOFLOW_API_KEY`, `ROBOFLOW_WORKSPACE`, `ROBOFLOW_PROJECT`, and `ROBOFLOW_VERSION`. That path often returns a split export with `train/`, `valid/`, and `test/`.
-- The prep pipeline supports both layouts.
-- If `split.force_resplit` is `true`, both layouts are flattened into one pool and then re-split locally anyway.
+The share URL usually downloads a flat COCO export with images plus a root
+`_annotations.coco.json`. The prep pipeline still supports both flat and split
+COCO layouts, and if `split.force_resplit` is `true`, everything is flattened
+into one pool and then re-split locally anyway.
 
 To pool multiple exports together, add more entries to
-[`data/dataset_sources.json`](./data/dataset_sources.json). Local COCO exports
-look like this:
+[`data/dataset_sources.json`](./data/dataset_sources.json).
 
-```json
-{
-  "name": "forked_2026_03_26",
-  "type": "local_coco_export",
-  "path": "Climbing Hold Detection-Forked on 3-26-2026.coco"
-}
-```
-
-Roboflow-hosted sources can be added like this:
+Roboflow share URL sources look like this:
 
 ```json
 {
   "name": "primary_dataset",
-  "type": "roboflow",
-  "download_url_env": "ROBOFLOW_DOWNLOAD_URL",
-  "workspace_env": "ROBOFLOW_WORKSPACE",
-  "project_env": "ROBOFLOW_PROJECT",
-  "version_env": "ROBOFLOW_VERSION",
-  "model_format": "coco-segmentation"
+  "type": "roboflow_share_url",
+  "download_url_env": "ROBOFLOW_DOWNLOAD_URL"
 }
 ```
-
-If `ROBOFLOW_DOWNLOAD_URL` is present, the pipeline uses that direct share link
-first. Otherwise it falls back to `ROBOFLOW_API_KEY`, `ROBOFLOW_WORKSPACE`,
-`ROBOFLOW_PROJECT`, and `ROBOFLOW_VERSION`.
 
 Roboflow downloads are cached under `data/roboflow_downloads/`.
 

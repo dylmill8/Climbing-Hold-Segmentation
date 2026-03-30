@@ -477,57 +477,6 @@ def load_yolo(weights_spec: str | None = None, model_dir: str = "./ml/model") ->
 
     raise FileNotFoundError(f"Specified weights not found: {weights_spec}")
 
-def download_roboflow_coco_dataset(
-    *,
-    api_key: str,
-    workspace: str,
-    project: str,
-    version: int,
-    download_root: str,
-    dataset_name: str,
-    model_format: str = "coco-segmentation",
-    overwrite: bool = False,
-) -> str:
-    try:
-        from roboflow import Roboflow
-    except ImportError as exc:
-        raise RuntimeError(
-            "Roboflow download requested, but the 'roboflow' package is not installed."
-        ) from exc
-
-    target_dir = os.path.join(download_root, _slugify_source_name(dataset_name))
-    marker_path = os.path.join(target_dir, ".download_complete.json")
-
-    if overwrite and os.path.isdir(target_dir):
-        shutil.rmtree(target_dir)
-
-    if os.path.isdir(target_dir) and os.path.isfile(marker_path):
-        return target_dir
-
-    os.makedirs(download_root, exist_ok=True)
-
-    rf = Roboflow(api_key=api_key)
-    dataset = rf.workspace(workspace).project(project).version(version).download(model_format=model_format)
-    downloaded_location = dataset.location
-
-    if os.path.isdir(target_dir):
-        shutil.rmtree(target_dir)
-    shutil.move(downloaded_location, target_dir)
-
-    with open(marker_path, "w", encoding="utf-8") as fh:
-        json.dump(
-            {
-                "workspace": workspace,
-                "project": project,
-                "version": version,
-                "model_format": model_format,
-            },
-            fh,
-            indent=2,
-        )
-
-    return target_dir
-
 def download_roboflow_coco_dataset_from_url(
     *,
     download_url: str,
