@@ -60,12 +60,6 @@ $env:YOLO_DEVICE = $run.Device
 $env:YOLO_CACHE = "ram"
 $env:YOLO_WORKERS = "6"
 
-# Lower LR and gentler spatial augmentation help preserve hold boundaries during fine-grained segmentation.
-$env:YOLO_LR0 = "0.0012"
-$env:YOLO_COPY_PASTE = "0.03"
-$env:YOLO_MOSAIC = "0.05"
-$env:YOLO_CLOSE_MOSAIC = "10"
-
 Write-Host "Starting segmentation training..."
 Write-Host "  dataset:   $resolvedDatasetConfig"
 Write-Host "  weights:   $($run.Weights)"

@@ -19,16 +19,44 @@ DEFAULT_ROBOFLOW_DOWNLOAD_ROOT = REPO_ROOT / "data" / "roboflow_downloads"
 DEFAULT_PREPARED_DATASET = REPO_ROOT / "data" / "training_dataset"
 DEFAULT_RUNS_DIR = REPO_ROOT / "ml" / "model" / "runs"
 DEFAULT_CLASS_NAMES = ("hold", "volume")
+DEFAULT_WEIGHTS = "yolo26m-seg.pt"
+DEFAULT_RUN_NAME = "y26m_seg_resplit_1440"
+DEFAULT_TRAINING_CONFIG = {
+    "imgsz": 1440,
+    "batch": 2,
+    "nbs": 64,
+    "epochs": 200,
+    "patience": 15,
+    "seed": 42,
+    "workers": 6,
+    "optimizer": "AdamW",
+    "lr0": 0.0012,
+    "lrf": 0.12,
+    "weight_decay": 0.0005,
+    "warmup_epochs": 5,
+    "hsv_h": 0.015,
+    "hsv_s": 0.7,
+    "hsv_v": 0.4,
+    "degrees": 10.0,
+    "translate": 0.05,
+    "scale": 0.5,
+    "shear": 0.0,
+    "perspective": 0.0,
+    "fliplr": 0.5,
+    "flipud": 0.0,
+    "mosaic": 0.05,
+    "mixup": 0.0,
+    "copy_paste": 0.03,
+    "erasing": 0.15,
+    "close_mosaic": 10,
+    "cache": "ram",
+    "max_det": 1000,
+}
 
 
 def getenv_int(name: str, default: int) -> int:
     value = os.getenv(name)
     return int(value) if value else default
-
-
-def getenv_float(name: str, default: float) -> float:
-    value = os.getenv(name)
-    return float(value) if value else default
 
 
 def getenv_bool(name: str, default: bool) -> bool:
@@ -170,7 +198,7 @@ def prepare_dataset() -> tuple[str, tuple[str, ...]]:
             train_split=float(split_config.get("train", 0.8)),
             valid_split=float(split_config.get("valid", 0.5)),
             null_fraction=float(split_config.get("null_fraction", 0.0)),
-            seed=int(split_config.get("seed", getenv_int("YOLO_SEED", 42))),
+            seed=int(split_config.get("seed", DEFAULT_TRAINING_CONFIG["seed"])),
         )
 
     return data_yaml, class_names
@@ -179,8 +207,8 @@ def prepare_dataset() -> tuple[str, tuple[str, ...]]:
 def main() -> None:
     load_dotenv()
 
-    weights_spec = os.getenv("YOLO_WEIGHTS", "yolo26s-seg.pt")
-    run_name = os.getenv("YOLO_RUN_NAME", "y26s_seg_2class_1024")
+    weights_spec = os.getenv("YOLO_WEIGHTS", DEFAULT_WEIGHTS)
+    run_name = os.getenv("YOLO_RUN_NAME", DEFAULT_RUN_NAME)
 
     data_yaml, class_names = prepare_dataset()
     print(f"Prepared classes: {', '.join(class_names)}")
@@ -192,42 +220,42 @@ def main() -> None:
     model = load_yolo(weights_spec)
 
     result = model.train(
-        resume=getenv_bool("YOLO_RESUME", False),
+        resume=False,
         task="segment",
         data=data_yaml,
-        imgsz=getenv_int("YOLO_IMGSZ", 1024),
-        batch=getenv_int("YOLO_BATCH", -1),
-        nbs=getenv_int("YOLO_NBS", 64),
-        epochs=getenv_int("YOLO_EPOCHS", 80),
-        patience=getenv_int("YOLO_PATIENCE", 20),
-        seed=getenv_int("YOLO_SEED", 42),
+        imgsz=getenv_int("YOLO_IMGSZ", DEFAULT_TRAINING_CONFIG["imgsz"]),
+        batch=getenv_int("YOLO_BATCH", DEFAULT_TRAINING_CONFIG["batch"]),
+        nbs=DEFAULT_TRAINING_CONFIG["nbs"],
+        epochs=getenv_int("YOLO_EPOCHS", DEFAULT_TRAINING_CONFIG["epochs"]),
+        patience=getenv_int("YOLO_PATIENCE", DEFAULT_TRAINING_CONFIG["patience"]),
+        seed=DEFAULT_TRAINING_CONFIG["seed"],
         device=os.getenv("YOLO_DEVICE"),
-        amp=getenv_bool("YOLO_AMP", True),
-        workers=getenv_int("YOLO_WORKERS", 0),
-        optimizer=os.getenv("YOLO_OPTIMIZER", "AdamW"),
-        lr0=getenv_float("YOLO_LR0", 0.003),
-        lrf=getenv_float("YOLO_LRF", 0.12),
-        weight_decay=getenv_float("YOLO_WEIGHT_DECAY", 0.0005),
-        cos_lr=getenv_bool("YOLO_COS_LR", True),
-        warmup_epochs=getenv_int("YOLO_WARMUP_EPOCHS", 5),
-        hsv_h=getenv_float("YOLO_HSV_H", 0.015),
-        hsv_s=getenv_float("YOLO_HSV_S", 0.7),
-        hsv_v=getenv_float("YOLO_HSV_V", 0.4),
-        degrees=getenv_float("YOLO_DEGREES", 10.0),
-        translate=getenv_float("YOLO_TRANSLATE", 0.05),
-        scale=getenv_float("YOLO_SCALE", 0.5),
-        shear=getenv_float("YOLO_SHEAR", 0.0),
-        perspective=getenv_float("YOLO_PERSPECTIVE", 0.0),
-        fliplr=getenv_float("YOLO_FLIPLR", 0.5),
-        flipud=getenv_float("YOLO_FLIPUD", 0.0),
-        mosaic=getenv_float("YOLO_MOSAIC", 0.12),
-        mixup=getenv_float("YOLO_MIXUP", 0.0),
-        copy_paste=getenv_float("YOLO_COPY_PASTE", 0.20),
-        erasing=getenv_float("YOLO_ERASING", 0.15),
-        close_mosaic=getenv_int("YOLO_CLOSE_MOSAIC", 18),
-        multi_scale=getenv_bool("YOLO_MULTI_SCALE", False),
-        cache=os.getenv("YOLO_CACHE", "ram"),
-        max_det=getenv_int("YOLO_MAX_DET", 1000),
+        amp=True,
+        workers=getenv_int("YOLO_WORKERS", DEFAULT_TRAINING_CONFIG["workers"]),
+        optimizer=DEFAULT_TRAINING_CONFIG["optimizer"],
+        lr0=DEFAULT_TRAINING_CONFIG["lr0"],
+        lrf=DEFAULT_TRAINING_CONFIG["lrf"],
+        weight_decay=DEFAULT_TRAINING_CONFIG["weight_decay"],
+        cos_lr=True,
+        warmup_epochs=DEFAULT_TRAINING_CONFIG["warmup_epochs"],
+        hsv_h=DEFAULT_TRAINING_CONFIG["hsv_h"],
+        hsv_s=DEFAULT_TRAINING_CONFIG["hsv_s"],
+        hsv_v=DEFAULT_TRAINING_CONFIG["hsv_v"],
+        degrees=DEFAULT_TRAINING_CONFIG["degrees"],
+        translate=DEFAULT_TRAINING_CONFIG["translate"],
+        scale=DEFAULT_TRAINING_CONFIG["scale"],
+        shear=DEFAULT_TRAINING_CONFIG["shear"],
+        perspective=DEFAULT_TRAINING_CONFIG["perspective"],
+        fliplr=DEFAULT_TRAINING_CONFIG["fliplr"],
+        flipud=DEFAULT_TRAINING_CONFIG["flipud"],
+        mosaic=DEFAULT_TRAINING_CONFIG["mosaic"],
+        mixup=DEFAULT_TRAINING_CONFIG["mixup"],
+        copy_paste=DEFAULT_TRAINING_CONFIG["copy_paste"],
+        erasing=DEFAULT_TRAINING_CONFIG["erasing"],
+        close_mosaic=DEFAULT_TRAINING_CONFIG["close_mosaic"],
+        multi_scale=False,
+        cache=os.getenv("YOLO_CACHE", DEFAULT_TRAINING_CONFIG["cache"]),
+        max_det=DEFAULT_TRAINING_CONFIG["max_det"],
         project=str(DEFAULT_RUNS_DIR),
         name=run_name,
     )

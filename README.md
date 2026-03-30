@@ -9,27 +9,20 @@ The training pipeline is manifest-driven. It expects a dataset config JSON at
 
 Current training assumptions:
 - Train 2 segmentation classes: `hold`, `volume`
-- Direct `python .\ml\model.py` default weights: `yolo26s-seg.pt`
-- `scripts/train_segmentation.ps1` default weights: `yolo26m-seg.pt`
+- Current standard training preset uses `yolo26m-seg.pt`
 - App/demo inference can filter to class `0` (`hold`) only
 - Training already uses full RGB color images; there is no grayscale conversion in the training pipeline.
 - Dataset sources are configured in [`data/dataset_sources.json`](./data/dataset_sources.json)
 
-Run training:
+Canonical training entrypoint:
 
 ```powershell
-python .\ml\model.py
+powershell -ExecutionPolicy Bypass -File .\scripts\train_segmentation.ps1
 ```
 
-Useful environment overrides:
-- `YOLO_DATASET_CONFIG` example: `data/dataset_sources.json`
-- `YOLO_WEIGHTS` example: `yolo26n-seg.pt`, `yolo26s-seg.pt`
-- `YOLO_EPOCHS`
-- `YOLO_PATIENCE`
-- `YOLO_BATCH`
-- `YOLO_IMGSZ`
-- `YOLO_DEVICE`
-- `YOLO_RUN_NAME`
+`scripts/train_segmentation.ps1` is the supported way to launch training. It sets
+the repo's current training preset, points at the repo-local `.venv`, and then
+calls [`ml/model.py`](./ml/model.py) underneath.
 
 Recommended overnight run:
 
@@ -43,14 +36,30 @@ Current default training preset in [`scripts/train_segmentation.ps1`](./scripts/
 - `batch=2`
 - `epochs=200`
 - `patience=15`
-- `cache=ram`
-- `workers=6`
+- Lower-level optimizer and augmentation settings are baked into the repo's fixed preset in [`ml/model.py`](./ml/model.py)
 
 If you hit GPU memory limits, retry with a lower image size or batch:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\train_segmentation.ps1 -ImageSize 1152 -Batch 1
 ```
+
+The underlying implementation lives in [`ml/model.py`](./ml/model.py). Use it
+directly only when you intentionally want the lower-level env-var driven path.
+Its built-in defaults match the current script preset.
+
+Useful environment overrides when calling `ml/model.py` directly:
+- `YOLO_DATASET_CONFIG` example: `data/dataset_sources.json`
+- `YOLO_WEIGHTS` example: `yolo26n-seg.pt`, `yolo26m-seg.pt`
+- `YOLO_EPOCHS`
+- `YOLO_PATIENCE`
+- `YOLO_BATCH`
+- `YOLO_IMGSZ`
+- `YOLO_DEVICE`
+- `YOLO_CACHE`
+- `YOLO_WORKERS`
+- `YOLO_RUN_NAME`
+- Lower-level optimizer and augmentation settings now live in the repo's fixed training preset instead of being exposed as first-class env knobs.
 
 If you only want to rebuild the training dataset without training:
 
