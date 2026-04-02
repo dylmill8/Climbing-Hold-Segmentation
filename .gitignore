@@ -4,13 +4,7 @@
 *.jpg
 *.png
 yolo26n.pt
-data/images/*
-data/labels/*
-data/bh/train/*
-data/bh/test/*
 ml/__pycache__/
 ml/model/*.pt
 ml/model/runs/
-data_roboflow.yaml
-data/training_dataset/
-data/roboflow_downloads/
+data/*/

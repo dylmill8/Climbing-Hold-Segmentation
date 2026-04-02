@@ -28,6 +28,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold.")
     parser.add_argument("--imgsz", type=int, default=1600, help="Inference image size.")
     parser.add_argument(
+        "--retina-masks",
+        dest="retina_masks",
+        action="store_true",
+        help="Upsample masks back to image resolution for cleaner edges.",
+    )
+    parser.add_argument(
+        "--no-retina-masks",
+        dest="retina_masks",
+        action="store_false",
+        help="Disable full-resolution mask upsampling.",
+    )
+    parser.add_argument(
         "--classes",
         default="",
         help="Optional comma-separated class indices to keep. Empty means all classes.",
@@ -42,6 +54,7 @@ def parse_args() -> argparse.Namespace:
         default="latest_test_review",
         help="Subdirectory name under output-root.",
     )
+    parser.set_defaults(retina_masks=True)
     return parser.parse_args()
 
 
@@ -101,6 +114,7 @@ def main() -> None:
         conf=args.conf,
         imgsz=args.imgsz,
         classes=classes,
+        retina_masks=args.retina_masks,
         save=False,
         save_txt=False,
         save_conf=False,

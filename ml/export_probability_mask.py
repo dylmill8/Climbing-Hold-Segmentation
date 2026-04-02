@@ -15,7 +15,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", required=True, help="Path to YOLO weights.")
     parser.add_argument("--class-index", type=int, default=0, help="Class index to keep.")
     parser.add_argument("--conf", type=float, default=0.25, help="Confidence threshold.")
-    parser.add_argument("--imgsz", type=int, default=1024, help="Inference image size.")
+    parser.add_argument("--imgsz", type=int, default=1440, help="Inference image size.")
+    parser.add_argument(
+        "--retina-masks",
+        dest="retina_masks",
+        action="store_true",
+        help="Upsample masks back to image resolution before exporting.",
+    )
+    parser.add_argument(
+        "--no-retina-masks",
+        dest="retina_masks",
+        action="store_false",
+        help="Disable full-resolution mask upsampling.",
+    )
+    parser.set_defaults(retina_masks=True)
     return parser.parse_args()
 
 
@@ -29,6 +42,7 @@ def main() -> None:
         conf=args.conf,
         imgsz=args.imgsz,
         classes=[args.class_index],
+        retina_masks=args.retina_masks,
         save=False,
         verbose=False,
     )
